@@ -66,4 +66,4 @@ Ensure the file path is correct so Power BI can load the dataset properly.
 
 This project is created for learning, practice, and demonstration of IT controls visualization and Power BI dashboard design.
 
-Screenshot: https://github.com/RafaelFeb/ITGC-PowerBi-Dashboard/blob/main/PowerBi%20DashBoard.png
+Screenshot: https://github.com/RafaelFeb/ITGC-PowerBi-Dashboard/blob/main/Screenshot%20PowerBI%20Dashboard%20ITGC.png
