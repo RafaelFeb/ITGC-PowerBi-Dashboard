@@ -46,14 +46,12 @@ Matrix Table – detailed logs, user access list
 https://github.com/RafaelFeb/ITGC-PowerBi-Dashboard/blob/main/ITGC%20PowerBi.pbix
 
 2. Open the Dataset
-/dataset/IT_Control_Dashboard_Dataset.xlsx
+https://github.com/RafaelFeb/ITGC-PowerBi-Dashboard/blob/main/IT_Control_Dashboard_Dataset.xlsx
 
 3. Load the Data in Power BI
-
 If you have the .pbix report file, simply open it in Power BI Desktop and refresh the data.
 
 4. Refresh Data
-
 Ensure the file path is correct so Power BI can load the dataset properly.
 
 🎨 Dashboard Design Principles
