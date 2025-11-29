@@ -43,12 +43,9 @@ Matrix Table – detailed logs, user access list
 
 🛠️ How to Use
 1. Clone the Repository
-git clone https://github.com/yourusername/IT-Control-Dashboard.git
+https://github.com/RafaelFeb/ITGC-PowerBi-Dashboard/blob/main/ITGC%20PowerBi.pbix
 
 2. Open the Dataset
-
-Navigate to:
-
 /dataset/IT_Control_Dashboard_Dataset.xlsx
 
 3. Load the Data in Power BI
