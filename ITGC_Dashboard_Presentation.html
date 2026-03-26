@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITGC Audit Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2128;
+  --border: #2d333b;
+  --text: #e6edf3;
+  --muted: #7d8590;
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.12);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.12);
+  --amber: #d29922;
+  --amber-dim: rgba(210,153,34,0.12);
+  --blue: #58a6ff;
+  --blue-dim: rgba(88,166,255,0.12);
+  --purple: #bc8cff;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo-badge {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #fff;
+}
+.header h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.header p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.filter-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px; color: var(--muted);
+}
+.filter-pill select {
+  background: transparent; border: none; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 11px;
+  cursor: pointer; outline: none;
+  appearance: none; padding-right: 4px;
+}
+.filter-pill select option { background: var(--surface2); }
+.btn-reset {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 20px;
+  padding: 5px 14px; font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all .2s;
+}
+.btn-reset:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ── MAIN GRID ── */
+.main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.kpi-card:hover { border-color: var(--blue); }
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.kpi-card.green::before { background: var(--green); }
+.kpi-card.red::before { background: var(--red); }
+.kpi-card.amber::before { background: var(--amber); }
+.kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.kpi-val { font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.kpi-val.green { color: var(--green); }
+.kpi-val.red { color: var(--red); }
+.kpi-val.amber { color: var(--amber); }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 8px; }
+.kpi-bar { height: 3px; background: var(--border); border-radius: 99px; margin-top: 12px; overflow: hidden; }
+.kpi-bar-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── BOTTOM GRID ── */
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ── CARD BASE ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+/* ── BAR CHART ── */
+.bar-list { display: flex; flex-direction: column; gap: 10px; }
+.bar-item { display: flex; flex-direction: column; gap: 4px; }
+.bar-item-top { display: flex; justify-content: space-between; align-items: center; }
+.bar-item-label { font-size: 11px; color: var(--text); }
+.bar-item-val { font-size: 11px; font-weight: 600; color: var(--muted); font-family: 'DM Mono', monospace; }
+.bar-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── DONUT CHART ── */
+.donut-wrap { display: flex; align-items: center; gap: 20px; }
+.donut-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.donut-leg-item { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.donut-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.donut-leg-name { flex: 1; }
+.donut-leg-val { font-family: 'DM Mono', monospace; font-weight: 500; }
+
+/* ── COLUMN CHART ── */
+.col-chart-wrap { display: flex; align-items: flex-end; gap: 8px; height: 140px; }
+.col-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.col-bar { width: 100%; border-radius: 4px 4px 0 0; transition: height .6s cubic-bezier(.34,1.56,.64,1); min-height: 4px; }
+.col-label { font-size: 9px; color: var(--muted); text-align: center; line-height: 1.3; }
+.col-val { font-size: 10px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+th { font-size: 10px; font-weight: 600; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+/* ── BADGES ── */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; font-family: 'DM Sans', sans-serif; }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+.badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 28px; color: var(--muted); font-size: 12px; }
+
+/* ── FOOTER STRIP ── */
+.footer-strip {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 28px;
+  border-top: 1px solid var(--border);
+  font-size: 10px; color: var(--muted);
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── TABS ── */
+.tab-row { display: flex; gap: 6px; }
+.tab-btn { font-size: 10px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.tab-btn.active { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-badge">IT</div>
+    <div>
+      <h1>ITGC Audit Dashboard</h1>
+      <p id="subtitleDate">IT General Controls · FY 2025</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="filter-pill">
+      <span>Domain</span>
+      <select id="fDomain">
+        <option value="all">All</option>
+        <option value="Access Management">Access Management</option>
+        <option value="Change Management">Change Management</option>
+        <option value="Incident Management">Incident Management</option>
+        <option value="IT Operations">IT Operations</option>
+      </select>
+    </div>
+    <div class="filter-pill">
+      <span>Status</span>
+      <select id="fStatus">
+        <option value="all">All</option>
+        <option value="Implemented">Implemented</option>
+        <option value="Pending">Pending</option>
+        <option value="Overdue">Overdue</option>
+      </select>
+    </div>
+    <div class="filter-pill">
+      <span>Severity</span>
+      <select id="fSev">
+        <option value="all">All</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+    </div>
+    <button class="btn-reset" id="btnReset">Reset</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- KPI ROW — matches 3 cardVisuals in pbix -->
+  <div class="kpi-row">
+    <div class="kpi-card green">
+      <div class="kpi-label">Controls Implemented</div>
+      <div class="kpi-val green" id="kImpl">—</div>
+      <div class="kpi-sub" id="kImplSub">of total controls</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kImplBar" style="background:var(--green);width:0%"></div></div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Overdue Controls</div>
+      <div class="kpi-val red" id="kOver">—</div>
+      <div class="kpi-sub" id="kOverSub">require immediate action</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kOverBar" style="background:var(--red);width:0%"></div></div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">High Severity Incidents</div>
+      <div class="kpi-val amber" id="kHigh">—</div>
+      <div class="kpi-sub" id="kHighSub">active incidents</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="kHighBar" style="background:var(--amber);width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID — bar + donut + column (matches pbix layout) -->
+  <div class="bottom-grid">
+
+    <!-- BAR CHART: Access User by Department (matches barChart in pbix) -->
+    <div class="card">
+      <div class="card-title">Controls by Domain</div>
+      <div class="bar-list" id="barChart"></div>
+    </div>
+
+    <!-- DONUT: Incident Severity Distribution (matches donutChart in pbix) -->
+    <div class="card">
+      <div class="card-title">Incident Severity Distribution</div>
+      <div class="donut-wrap">
+        <svg id="donutSvg" width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0"></svg>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+    </div>
+
+    <!-- COLUMN CHART: Category Analysis by ChangeID (matches columnChart in pbix) -->
+    <div class="card">
+      <div class="card-title">Change Category Analysis</div>
+      <div class="col-chart-wrap" id="colChart"></div>
+    </div>
+
+  </div>
+
+  <!-- TABLE: UserAccess — Department / UserID / Role (matches tableEx in pbix) -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="card-title">Open Findings — Control Details</div>
+      <div class="tab-row">
+        <button class="tab-btn active" id="tabAll">All Open</button>
+        <button class="tab-btn" id="tabOverdue">Overdue</button>
+        <button class="tab-btn" id="tabHigh">High Severity</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Control ID</th>
+            <th>Domain</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Severity</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer-strip">
+  <div><span class="live-dot"></span>Live data · Last refreshed: <span id="refreshTime"></span></div>
+  <div>ITGC Audit Dashboard · Internal Use Only</div>
+</div>
+
+<script>
+var CONTROLS = [
+  {id:'CTL-001',domain:'Access Management',desc:'MFA not enforced for admin accounts',status:'Overdue',sev:'High',owner:'J. Santos'},
+  {id:'CTL-002',domain:'Access Management',desc:'Role-based access control implemented',status:'Implemented',sev:'Low',owner:'J. Santos'},
+  {id:'CTL-003',domain:'Access Management',desc:'Quarterly access review completed',status:'Implemented',sev:'Medium',owner:'J. Santos'},
+  {id:'CTL-004',domain:'Access Management',desc:'Privileged access management policy enforced',status:'Implemented',sev:'High',owner:'J. Santos'},
+  {id:'CTL-005',domain:'Access Management',desc:'Segregation of duties policy documented',status:'Pending',sev:'Medium',owner:'J. Santos'},
+  {id:'CTL-006',domain:'Access Management',desc:'User provisioning process automated',status:'Pending',sev:'Low',owner:'J. Santos'},
+  {id:'CTL-023',domain:'Access Management',desc:'Terminated users still have active sessions',status:'Overdue',sev:'High',owner:'J. Santos'},
+  {id:'CTL-024',domain:'Access Management',desc:'Password complexity policy enforced',status:'Implemented',sev:'Medium',owner:'J. Santos'},
+  {id:'CTL-025',domain:'Access Management',desc:'Session timeout configured for all systems',status:'Overdue',sev:'Medium',owner:'J. Santos'},
+  {id:'CTL-026',domain:'Access Management',desc:'VPN access log review scheduled',status:'Pending',sev:'Low',owner:'J. Santos'},
+  {id:'CTL-027',domain:'Access Management',desc:'SSH key rotation policy applied',status:'Implemented',sev:'High',owner:'J. Santos'},
+  {id:'CTL-028',domain:'Access Management',desc:'Admin account naming convention enforced',status:'Implemented',sev:'Low',owner:'J. Santos'},
+  {id:'CTL-029',domain:'Access Management',desc:'Directory sync with HR system active',status:'Implemented',sev:'Medium',owner:'J. Santos'},
+  {id:'CTL-030',domain:'Access Management',desc:'Audit log retention set to 12 months',status:'Overdue',sev:'High',owner:'J. Santos'},
+  {id:'CTL-007',domain:'Change Management',desc:'Emergency changes lack post-implementation review',status:'Pending',sev:'Medium',owner:'R. Wijaya'},
+  {id:'CTL-008',domain:'Change Management',desc:'Change advisory board process documented',status:'Implemented',sev:'Low',owner:'R. Wijaya'},
+  {id:'CTL-009',domain:'Change Management',desc:'Change freeze window enforced',status:'Implemented',sev:'Medium',owner:'R. Wijaya'},
+  {id:'CTL-010',domain:'Change Management',desc:'Standard change catalog published',status:'Implemented',sev:'Low',owner:'R. Wijaya'},
+  {id:'CTL-011',domain:'Change Management',desc:'Change success rate monitored monthly',status:'Implemented',sev:'Medium',owner:'R. Wijaya'},
+  {id:'CTL-031',domain:'Change Management',desc:'Rollback plans missing for 3 changes',status:'Pending',sev:'Low',owner:'R. Wijaya'},
+  {id:'CTL-032',domain:'Change Management',desc:'Production deployments require dual approval',status:'Implemented',sev:'High',owner:'R. Wijaya'},
+  {id:'CTL-033',domain:'Change Management',desc:'Change tickets closed without evidence',status:'Overdue',sev:'Medium',owner:'R. Wijaya'},
+  {id:'CTL-034',domain:'Change Management',desc:'Version control enforced for all releases',status:'Implemented',sev:'High',owner:'R. Wijaya'},
+  {id:'CTL-035',domain:'Change Management',desc:'Pre-change testing checklist not completed',status:'Pending',sev:'Medium',owner:'R. Wijaya'},
+  {id:'CTL-036',domain:'Change Management',desc:'Change schedule communicated to stakeholders',status:'Implemented',sev:'Low',owner:'R. Wijaya'},
+  {id:'CTL-012',domain:'Incident Management',desc:'Incident escalation SLA breached',status:'Overdue',sev:'High',owner:'A. Pratama'},
+  {id:'CTL-013',domain:'Incident Management',desc:'Incident classification matrix defined',status:'Implemented',sev:'Low',owner:'A. Pratama'},
+  {id:'CTL-014',domain:'Incident Management',desc:'On-call rotation schedule maintained',status:'Implemented',sev:'Medium',owner:'A. Pratama'},
+  {id:'CTL-015',domain:'Incident Management',desc:'Post-incident review process active',status:'Implemented',sev:'Medium',owner:'A. Pratama'},
+  {id:'CTL-016',domain:'Incident Management',desc:'Incident communication template in use',status:'Implemented',sev:'Low',owner:'A. Pratama'},
+  {id:'CTL-045',domain:'Incident Management',desc:'Root cause analysis not completed',status:'Pending',sev:'Medium',owner:'A. Pratama'},
+  {id:'CTL-046',domain:'Incident Management',desc:'SIEM alert rules reviewed quarterly',status:'Implemented',sev:'High',owner:'A. Pratama'},
+  {id:'CTL-047',domain:'Incident Management',desc:'Security incident runbook outdated',status:'Overdue',sev:'High',owner:'A. Pratama'},
+  {id:'CTL-048',domain:'Incident Management',desc:'Incident ticket SLA monitoring active',status:'Pending',sev:'Medium',owner:'A. Pratama'},
+  {id:'CTL-018',domain:'IT Operations',desc:'Backup verification not documented',status:'Overdue',sev:'Medium',owner:'D. Santoso'},
+  {id:'CTL-019',domain:'IT Operations',desc:'Capacity monitoring dashboard in place',status:'Implemented',sev:'Low',owner:'D. Santoso'},
+  {id:'CTL-020',domain:'IT Operations',desc:'DR test completed within last 12 months',status:'Implemented',sev:'High',owner:'D. Santoso'},
+  {id:'CTL-021',domain:'IT Operations',desc:'Vulnerability scan run monthly',status:'Implemented',sev:'High',owner:'D. Santoso'},
+  {id:'CTL-022',domain:'IT Operations',desc:'Network segmentation policy enforced',status:'Implemented',sev:'Medium',owner:'D. Santoso'},
+  {id:'CTL-039',domain:'IT Operations',desc:'Patch deployment outside approved window',status:'Overdue',sev:'Medium',owner:'D. Santoso'},
+  {id:'CTL-040',domain:'IT Operations',desc:'Asset inventory updated quarterly',status:'Implemented',sev:'Low',owner:'D. Santoso'},
+  {id:'CTL-041',domain:'IT Operations',desc:'Log aggregation configured for all servers',status:'Implemented',sev:'Medium',owner:'D. Santoso'},
+  {id:'CTL-042',domain:'IT Operations',desc:'SSL certificate expiry monitoring active',status:'Pending',sev:'Medium',owner:'D. Santoso'},
+  {id:'CTL-043',domain:'IT Operations',desc:'Database access reviewed semi-annually',status:'Implemented',sev:'High',owner:'D. Santoso'},
+  {id:'CTL-044',domain:'IT Operations',desc:'Cloud storage bucket permissions audited',status:'Pending',sev:'High',owner:'D. Santoso'},
+  {id:'CTL-050',domain:'IT Operations',desc:'Firewall rule review overdue',status:'Overdue',sev:'High',owner:'D. Santoso'}
+];
+
+var INCIDENTS = [{s:'High',n:7},{s:'Medium',n:11},{s:'Low',n:8}];
+var CHANGES = {labels:['Emergency','Standard','Normal','Patch'],data:[5,18,12,9]};
+var DOMAINS = ['Access Management','Change Management','Incident Management','IT Operations'];
+
+var activeTab = 'all';
+
+function getFiltered() {
+  var d = document.getElementById('fDomain').value;
+  var s = document.getElementById('fStatus').value;
+  var v = document.getElementById('fSev').value;
+  return CONTROLS.filter(function(c) {
+    return (d === 'all' || c.domain === d) &&
+           (s === 'all' || c.status === s) &&
+           (v === 'all' || c.sev === v);
+  });
+}
+
+function render() {
+  var data = getFiltered();
+  renderKpis(data);
+  renderBar(data);
+  renderDonut();
+  renderCol();
+  renderTable();
+}
+
+function renderKpis(data) {
+  var t = data.length;
+  var impl = data.filter(function(c){return c.status==='Implemented';}).length;
+  var over = data.filter(function(c){return c.status==='Overdue';}).length;
+  var pct = t > 0 ? Math.round(impl/t*100) : 0;
+  var opct = t > 0 ? Math.round(over/t*100) : 0;
+
+  var sv = document.getElementById('fSev').value;
+  var incFiltered = INCIDENTS.filter(function(x){return sv==='all'||x.s===sv;});
+  var highInc = 0;
+  for(var i=0;i<incFiltered.length;i++){if(incFiltered[i].s==='High')highInc=incFiltered[i].n;}
+  var totalInc = 0;
+  for(var j=0;j<INCIDENTS.length;j++) totalInc+=INCIDENTS[j].n;
+  var hpct = Math.round(highInc/totalInc*100);
+
+  document.getElementById('kImpl').textContent = t > 0 ? pct+'%' : '—';
+  document.getElementById('kImplSub').textContent = impl+' of '+t+' controls';
+  document.getElementById('kImplBar').style.width = pct+'%';
+
+  document.getElementById('kOver').textContent = over;
+  document.getElementById('kOverSub').textContent = opct+'% of selection';
+  document.getElementById('kOverBar').style.width = opct+'%';
+
+  document.getElementById('kHigh').textContent = highInc;
+  document.getElementById('kHighSub').textContent = hpct+'% of all incidents';
+  document.getElementById('kHighBar').style.width = hpct+'%';
+}
+
+function renderBar(data) {
+  var maxVal = 1;
+  var rows = [];
+  for(var i=0;i<DOMAINS.length;i++){
+    var sub = data.filter(function(c){return c.domain===DOMAINS[i];});
+    var n = sub.length;
+    if(n > maxVal) maxVal = n;
+    rows.push({label:DOMAINS[i], n:n});
+  }
+  var colors = ['var(--blue)','var(--green)','var(--purple)','var(--amber)'];
+  var html = '';
+  for(var j=0;j<rows.length;j++){
+    var pct = Math.round(rows[j].n/maxVal*100);
+    var shortLabel = rows[j].label.replace(' Management','').replace(' Operations','');
+    html += '<div class="bar-item">' +
+      '<div class="bar-item-top">' +
+        '<span class="bar-item-label">'+shortLabel+'</span>' +
+        '<span class="bar-item-val">'+rows[j].n+'</span>' +
+      '</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+colors[j]+'"></div></div>' +
+    '</div>';
+  }
+  document.getElementById('barChart').innerHTML = html || '<div class="empty">No data</div>';
+}
+
+function renderDonut() {
+  var sv = document.getElementById('fSev').value;
+  var inc = INCIDENTS.filter(function(x){return sv==='all'||x.s===sv;});
+  var total = 0;
+  for(var k=0;k<inc.length;k++) total+=inc[k].n;
+  var colors = {High:'#f85149',Medium:'#d29922',Low:'#3fb950'};
+  var cx=55,cy=55,r=40,circ=2*Math.PI*r,off=0;
+  var segs = '<circle cx="55" cy="55" r="40" fill="none" stroke="#2d333b" stroke-width="16"/>';
+  for(var i=0;i<inc.length;i++){
+    var frac = total>0?inc[i].n/total:0;
+    var dash = frac*circ;
+    segs += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+colors[inc[i].s]+'" stroke-width="16" stroke-dasharray="'+dash+' '+circ+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 '+cx+' '+cy+')" stroke-linecap="round"/>';
+    off += dash;
+  }
+  segs += '<text x="55" y="51" text-anchor="middle" font-size="16" font-weight="700" fill="#e6edf3" font-family="DM Sans,sans-serif">'+total+'</text>';
+  segs += '<text x="55" y="65" text-anchor="middle" font-size="9" fill="#7d8590" font-family="DM Sans,sans-serif">incidents</text>';
+  document.getElementById('donutSvg').innerHTML = segs;
+
+  var leg = '';
+  for(var j=0;j<inc.length;j++){
+    var pct = total>0?Math.round(inc[j].n/total*100):0;
+    leg += '<div class="donut-leg-item">' +
+      '<div class="donut-dot" style="background:'+colors[inc[j].s]+'"></div>' +
+      '<span class="donut-leg-name">'+inc[j].s+'</span>' +
+      '<span class="donut-leg-val" style="color:'+colors[inc[j].s]+'">'+inc[j].n+' <span style="color:var(--muted);font-size:10px">('+pct+'%)</span></span>' +
+    '</div>';
+  }
+  document.getElementById('donutLegend').innerHTML = leg || '<span style="color:var(--muted);font-size:11px">No data</span>';
+}
+
+function renderCol() {
+  var maxVal = 0;
+  for(var i=0;i<CHANGES.data.length;i++){if(CHANGES.data[i]>maxVal)maxVal=CHANGES.data[i];}
+  var colors = ['var(--red)','var(--green)','var(--blue)','var(--amber)'];
+  var html = '';
+  for(var j=0;j<CHANGES.data.length;j++){
+    var hpct = Math.round(CHANGES.data[j]/maxVal*100);
+    html += '<div class="col-item">' +
+      '<div class="col-val">'+CHANGES.data[j]+'</div>' +
+      '<div class="col-bar" style="height:'+hpct+'%;background:'+colors[j]+'"></div>' +
+      '<div class="col-label">'+CHANGES.labels[j]+'</div>' +
+    '</div>';
+  }
+  document.getElementById('colChart').innerHTML = html;
+}
+
+function renderTable() {
+  var rows = getFiltered().filter(function(r){return r.status!=='Implemented';});
+  if(activeTab==='Overdue') rows = rows.filter(function(r){return r.status==='Overdue';});
+  if(activeTab==='High') rows = rows.filter(function(r){return r.sev==='High';});
+
+  var html = '';
+  if(rows.length===0){
+    html = '<tr><td colspan="6" class="empty">No open findings match current filters.</td></tr>';
+  } else {
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      var statusBadge = r.status==='Overdue'
+        ? '<span class="badge badge-red">'+r.status+'</span>'
+        : '<span class="badge badge-blue">'+r.status+'</span>';
+      var sevBadge = r.sev==='High'
+        ? '<span class="badge badge-red">'+r.sev+'</span>'
+        : r.sev==='Medium'
+        ? '<span class="badge badge-amber">'+r.sev+'</span>'
+        : '<span class="badge badge-green">'+r.sev+'</span>';
+      html += '<tr>' +
+        '<td>'+r.id+'</td>' +
+        '<td style="font-family:DM Sans,sans-serif;color:var(--muted)">'+r.domain+'</td>' +
+        '<td style="font-family:DM Sans,sans-serif">'+r.desc+'</td>' +
+        '<td>'+statusBadge+'</td>' +
+        '<td>'+sevBadge+'</td>' +
+        '<td style="color:var(--muted)">'+r.owner+'</td>' +
+      '</tr>';
+    }
+  }
+  document.getElementById('tblBody').innerHTML = html;
+}
+
+function setTab(t) {
+  activeTab = t;
+  document.getElementById('tabAll').className = 'tab-btn' + (t==='all'?' active':'');
+  document.getElementById('tabOverdue').className = 'tab-btn' + (t==='Overdue'?' active':'');
+  document.getElementById('tabHigh').className = 'tab-btn' + (t==='High'?' active':'');
+  renderTable();
+}
+
+// Event listeners
+document.getElementById('fDomain').addEventListener('change', render);
+document.getElementById('fStatus').addEventListener('change', render);
+document.getElementById('fSev').addEventListener('change', render);
+document.getElementById('btnReset').addEventListener('click', function(){
+  document.getElementById('fDomain').value='all';
+  document.getElementById('fStatus').value='all';
+  document.getElementById('fSev').value='all';
+  render();
+});
+document.getElementById('tabAll').addEventListener('click', function(){setTab('all');});
+document.getElementById('tabOverdue').addEventListener('click', function(){setTab('Overdue');});
+document.getElementById('tabHigh').addEventListener('click', function(){setTab('High');});
+
+// Footer timestamp
+var now = new Date();
+document.getElementById('refreshTime').textContent = now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+// Init
+render();
+</script>
+</body>
+</html>
